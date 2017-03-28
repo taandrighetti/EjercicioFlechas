@@ -1,3 +1,4 @@
+
 %% 1. Adquisición de imagen
 clt
 
@@ -103,3 +104,42 @@ subplot(2, 4, 4);
 Bio_plotfeatures(X(:,k),d,Xn(k,:));
 subplot(2, 4, 8);
 Bio_plotfeatures(Xunnorm(:,k),d,Xn(k,:));
+
+%% 8. Diseño del clasificador
+% usando las características 17 y 19
+close all
+figure
+Bio_plotfeatures(Xunnorm(:,k),d,Xn(k,:));
+
+% Separación horizontal, entre las clases 2 y 3:
+borde_derecho_clase3 = max(Xunnorm(30:43,17));
+borde_izquierdo_clase2 = min(Xunnorm(18:29,17));
+threshold_horizontal = (borde_derecho_clase3 + borde_izquierdo_clase2) / 2;
+
+% Separación vertical, entre las clases 1 y las otras dos:
+inf = min(Xunnorm(1:17,19));    % borde_inferior_clase1
+sup = max(Xunnorm(18:43,19));   % borde_superior_clases23
+threshold_vertical = 10^((log10(sup)+log10(inf)) / 2);
+
+%% 9. Clasificar arrows_2.bmp
+
+A2 = not(imread('arrows_2.bmp'));
+A2dil = imdilate(A2,ones(3,3));
+A2label = bwlabel(A2dil,4);
+[Features, FeatureNames] = Bfx_geo(A2label,op);
+%%
+close all
+figure
+imshow(A2);
+
+for i = 1:size(Features,1)
+    if Features(i, 19) < threshold_horizontal
+        clase = 3;
+    elseif Features(i, 21) < threshold_vertical
+        clase = 2;
+    else
+        clase = 1;
+    end
+    
+    text(Features(i, 2), Features(i, 1), num2str(clase), 'Color', 'red', 'BackgroundColor', [0.2 0 0], 'FontSize', 10, 'HorizontalAlignment', 'center');
+end
